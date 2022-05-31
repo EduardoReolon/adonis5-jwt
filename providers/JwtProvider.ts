@@ -21,6 +21,7 @@ export default class JwtProvider {
         const {default: JwtDatabaseProvider} = await import('../lib/TokenProviders/JwtDatabaseProvider');
         const {default: JwtMongoProvider} = await import('../lib/TokenProviders/JwtMongoProvider');
         const {default: RefreshTokenDatabaseProvider} = await import('../lib/TokenProviders/RefreshTokenDatabaseProvider');
+        const {default: RefreshTokenMongoProvider} = await import('../lib/TokenProviders/RefreshTokenMongoProvider');
 
         AuthManager.extend('guard', 'jwt', (_auth: typeof AuthManager, _mapping, config, provider, ctx) => {
             //The default TokenDatabaseProvider expects token id to be prepended
@@ -42,6 +43,9 @@ export default class JwtProvider {
             } else if (config.persistJwt && config.tokenProvider.driver === "mongo") {
                 const Database = this.app.container.use('Adonis/Lucid/Database');
                 tokenProvider = new JwtMongoProvider(config.tokenProvider, Database);
+            } else if (!config.persistJwt && config.tokenProvider.driver === "mongo") {
+                const Database = this.app.container.use('Adonis/Lucid/Database');
+                tokenProvider = new RefreshTokenMongoProvider(config.tokenProvider, Database);
             } else {
                 throw new Error(`Invalid tokenProvider driver: ${config.tokenProvider.driver}`)
             }

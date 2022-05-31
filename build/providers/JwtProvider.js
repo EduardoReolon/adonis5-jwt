@@ -38,6 +38,7 @@ class JwtProvider {
         const { default: JwtDatabaseProvider } = await Promise.resolve().then(() => __importStar(require('../lib/TokenProviders/JwtDatabaseProvider')));
         const { default: JwtMongoProvider } = await Promise.resolve().then(() => __importStar(require('../lib/TokenProviders/JwtMongoProvider')));
         const { default: RefreshTokenDatabaseProvider } = await Promise.resolve().then(() => __importStar(require('../lib/TokenProviders/RefreshTokenDatabaseProvider')));
+        const { default: RefreshTokenMongoProvider } = await Promise.resolve().then(() => __importStar(require('../lib/TokenProviders/RefreshTokenMongoProvider')));
         AuthManager.extend('guard', 'jwt', (_auth, _mapping, config, provider, ctx) => {
             //The default TokenDatabaseProvider expects token id to be prepended
             //to the JWT token which makes no sense, because then JWT becomes invalid.
@@ -60,6 +61,10 @@ class JwtProvider {
             else if (config.persistJwt && config.tokenProvider.driver === "mongo") {
                 const Database = this.app.container.use('Adonis/Lucid/Database');
                 tokenProvider = new JwtMongoProvider(config.tokenProvider, Database);
+            }
+            else if (!config.persistJwt && config.tokenProvider.driver === "mongo") {
+                const Database = this.app.container.use('Adonis/Lucid/Database');
+                tokenProvider = new RefreshTokenMongoProvider(config.tokenProvider, Database);
             }
             else {
                 throw new Error(`Invalid tokenProvider driver: ${config.tokenProvider.driver}`);
